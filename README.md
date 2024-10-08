@@ -31,6 +31,8 @@ Hosts are read from and added to `~/.ssh/config`.
 
 ## Main menu
 
+**Connect...**: Connect via SSH as the user or root
+
 **Check status**: Test SSH connection as root and app, UFW status and rules, Docker and ufw-docker status, and Netdata status
 
 **Basic setup**: Enable UFW and create `app` user
@@ -39,12 +41,13 @@ Hosts are read from and added to `~/.ssh/config`.
 
 **Install Netdata agent**: Install and setup Netdata agent
 
+**Open port**:
+
+- **On subnet**: Open a port on the local `10.0.0.0/24` subnet
+- **On internet**: Open a Docker container port to the internet, via ufw-docker
+
 **Test ports**: Test which ports are open on the server
 
 _Coming soon:_
 
 **Install Netdata dashboard**: Install Netdata, enable web dashboard, add haproxy with HTTP Basic Auth in front of it
-
-**Open internal port**: Open a port on the local `10.0.0.0/24` subnet
-
-**Open Docker port**: Expose a port from a Docker container to the public internet (using ufw-docker)

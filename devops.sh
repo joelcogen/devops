@@ -81,7 +81,14 @@ choose_host() {
 }
 
 display_menu() {
-  local options=("Check status" "Basic setup" "Install Docker" "Install Netdata agent" "Test ports" "Back")
+  local options=("Connect..."
+                "Check status"
+                "Basic setup"
+                "Install Docker"
+                "Install Netdata agent"
+                "Open port..."
+                "Test ports"
+                "Back")
   local selected=0
   local key=""
 
@@ -118,12 +125,14 @@ display_menu() {
       "")
         # Enter key
         case $selected in
-          0) host_title; check_status; finish;;
-          1) host_title; basic_setup; finish;;
-          2) host_title; install_docker; finish;;
-          3) host_title; install_netdata; finish;;
-          4) host_title; test_ports;;
-          5) choose_host;;
+          0) host_title; display_menu_ssh;;
+          1) host_title; check_status; finish;;
+          2) host_title; basic_setup; finish;;
+          3) host_title; install_docker; finish;;
+          4) host_title; install_netdata; finish;;
+          5) host_title; display_menu_ports;;
+          6) host_title; test_ports;;
+          7) choose_host;;
         esac
         ;;
     esac
@@ -295,6 +304,158 @@ test_ports() {
       break
     fi
     nc -zG2 $IP $additional_port &> /dev/null && echo -e "\033[0;32m$additional_port: open\033[0m" || echo -e "\033[0;31m$additional_port: closed\033[0m"
+  done
+}
+
+display_menu_ports() {
+  local options=("On subnet" "On internet" "Back")
+  local selected=0
+  local key=""
+
+  while true; do
+    host_title
+    echo -e "\033[0;33mSelect action:\033[0m\n"
+
+    for i in "${!options[@]}"; do
+      if [ $i -eq $selected ]; then
+        echo -e "\033[0;34m> ${options[$i]}\033[0m"
+      else
+        echo "  ${options[$i]}"
+      fi
+    done
+
+    echo
+    read -rsn1 key
+
+    case "$key" in
+      A)
+        # Up arrow
+        ((selected--))
+        if [ $selected -lt 0 ]; then
+          selected=$((${#options[@]} - 1))
+        fi
+        ;;
+      B)
+        # Down arrow
+        ((selected++))
+        if [ $selected -ge ${#options[@]} ]; then
+          selected=0
+        fi
+        ;;
+      "")
+        # Enter key
+        case $selected in
+          0) host_title; open_subnet_port; finish;;
+          1) host_title; open_internet_port; finish;;
+          2) break;;
+        esac
+        ;;
+    esac
+  done
+}
+
+open_subnet_port() {
+  echo -en "\033[0;33mPort: \033[0m"
+  read port
+  ssh root@$NAME "ufw allow from 10.0.0.0/24 to any port $port && ufw status"
+}
+
+open_internet_port() {
+  echo -e "\033[0;33m⏱ Listing containers...\033[0m"
+
+  local options=()
+  while IFS= read -r line; do
+    options+=("$line")
+  done < <(ssh $NAME "docker ps --format '{{.Names}}'")
+  local selected=0
+  local key=""
+
+  while true; do
+    host_title
+    echo -e "\033[0;33mSelect container:\033[0m\n"
+
+    for i in "${!options[@]}"; do
+      if [ $i -eq $selected ]; then
+        echo -e "\033[0;34m> ${options[$i]}\033[0m"
+      else
+        echo "  ${options[$i]}"
+      fi
+    done
+
+    echo
+    read -rsn1 key
+
+    case "$key" in
+      A)
+        # Up arrow
+        ((selected--))
+        if [ $selected -lt 0 ]; then
+          selected=$((${#options[@]} - 1))
+        fi
+        ;;
+      B)
+        # Down arrow
+        ((selected++))
+        if [ $selected -ge ${#options[@]} ]; then
+          selected=0
+        fi
+        ;;
+      "")
+        # Enter key
+        container="${options[$selected]}"
+        echo -en "\033[0;33mPort: \033[0m"
+        read port
+        ssh root@$NAME "ufw-docker allow $container $port/tcp && ufw status"
+        break
+        ;;
+    esac
+  done
+}
+
+display_menu_ssh(){
+  local options=("$USERNAME" "root" "Back")
+  local selected=0
+  local key=""
+
+  while true; do
+    host_title
+    echo -e "\033[0;33mSelect user:\033[0m\n"
+
+    for i in "${!options[@]}"; do
+      if [ $i -eq $selected ]; then
+        echo -e "\033[0;34m> ${options[$i]}\033[0m"
+      else
+        echo "  ${options[$i]}"
+      fi
+    done
+
+    echo
+    read -rsn1 key
+
+    case "$key" in
+      A)
+        # Up arrow
+        ((selected--))
+        if [ $selected -lt 0 ]; then
+          selected=$((${#options[@]} - 1))
+        fi
+        ;;
+      B)
+        # Down arrow
+        ((selected++))
+        if [ $selected -ge ${#options[@]} ]; then
+          selected=0
+        fi
+        ;;
+      "")
+        # Enter key
+        case $selected in
+          0) host_title; ssh $NAME; break;;
+          1) host_title; ssh root@$NAME; break;;
+          2) break;;
+        esac
+        ;;
+    esac
   done
 }
 
