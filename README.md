@@ -41,13 +41,14 @@ Hosts are read from and added to `~/.ssh/config`.
 
 **Install Netdata agent**: Install and setup Netdata agent
 
-**Open port**:
+**Open port...**:
 
 - **On subnet**: Open a port on the local `10.0.0.0/24` subnet
 - **On internet**: Open a Docker container port to the internet, via ufw-docker
 
 **Test ports**: Test which ports are open on the server
 
-_Coming soon:_
+## Todo
 
-**Install Netdata dashboard**: Install Netdata, enable web dashboard, add haproxy with HTTP Basic Auth in front of it
+- **Install Netdata dashboard**: Install Netdata, enable web dashboard, add haproxy with HTTP Basic Auth in front of it
+- Handle different user than app
