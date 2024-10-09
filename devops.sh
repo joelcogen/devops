@@ -68,6 +68,9 @@ choose_host() {
           selected=0
         fi
         ;;
+      q)
+        break
+        ;;
       "")
         # Enter key
         IFS=':' read -r NAME IP <<< "${HOSTS[$selected]}"
