@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
-if [ -f .env ]; then
-  source .env
+if [ -f "$(dirname "$0")/.env" ]; then
+  source "$(dirname "$0")/.env"
 fi
 
 USERNAME=${USERNAME:-"app"}
@@ -288,7 +288,7 @@ install_netdata() {
     cat /etc/netdata/stream.conf && \
     systemctl restart netdata"
 
-  echo -e "NETDATA_DESTINATION=$NETDATA_DESTINATION\nNETDATA_API_KEY=$NETDATA_API_KEY" > .env
+  echo -e "NETDATA_DESTINATION=$NETDATA_DESTINATION\nNETDATA_API_KEY=$NETDATA_API_KEY" > "$(dirname "$0")/.env"
 }
 
 test_ports() {
