@@ -7,20 +7,25 @@ fi
 USERNAME=${USERNAME:-"app"}
 NAME=""
 IP=""
+HOSTS=()
 
-choose_host() {
-  local options=()
-  local ips=()
+read_hosts() {
   while IFS= read -r line; do
     if [[ $line == Host* ]]; then
       host=$(echo $line | cut -d " " -f 2)
-      options+=("$host")
+      HOSTS+=("$host:")  # Add colon as a placeholder for IP
     elif [[ $line =~ ^[[:space:]]*HostName ]]; then
       hostname=$(echo $line | awk '{print $NF}')
-      ips+=("$hostname")
+      # Update the last element with the hostname
+      last_index=$((${#HOSTS[@]} - 1))
+      HOSTS[$last_index]="${HOSTS[$last_index]}$hostname"
     fi
   done < ~/.ssh/config
-  options+=("+ Add a new host")
+  HOSTS+=("+ Add a new host:NEW")
+}
+
+choose_host() {
+  read_hosts
   local selected=0
   local key=""
 
@@ -36,11 +41,12 @@ choose_host() {
     echo -e "\033[0;31m|__/                                           |_|                         |_|        \033[0m"
     echo -e "\033[0;33m\nSelect host:\033[0m\n"
 
-    for i in "${!options[@]}"; do
+    for i in "${!HOSTS[@]}"; do
+      IFS=':' read -r host ip <<< "${HOSTS[$i]}"
       if [ $i -eq $selected ]; then
-        printf "\033[0;34m> %-30s %s\033[0m\n" "${options[$i]}" "${ips[$i]}"
+        printf "\033[0;34m> %-30s %s\033[0m\n" "$host" "$ip"
       else
-        printf "  %-30s %s\n" "${options[$i]}" "${ips[$i]}"
+        printf "  %-30s %s\n" "$host" "$ip"
       fi
     done
 
@@ -52,24 +58,24 @@ choose_host() {
         # Up arrow
         ((selected--))
         if [ $selected -lt 0 ]; then
-          selected=$((${#options[@]} - 1))
+          selected=$((${#HOSTS[@]} - 1))
         fi
         ;;
       B)
         # Down arrow
         ((selected++))
-        if [ $selected -ge ${#options[@]} ]; then
+        if [ $selected -ge ${#HOSTS[@]} ]; then
           selected=0
         fi
         ;;
       "")
         # Enter key
-        if [ -z "${ips[$selected]}" ]; then
+        IFS=':' read -r NAME IP <<< "${HOSTS[$selected]}"
+        if [[ "${IP}" = "NEW" ]]; then
           clear
           add_to_local_config
+          read_hosts
         else
-          NAME="${options[$selected]}"
-          IP="${ips[$selected]}"
           display_menu
         fi
         ;;
