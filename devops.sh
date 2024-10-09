@@ -4,12 +4,14 @@ if [ -f "$(dirname "$0")/.env" ]; then
   source "$(dirname "$0")/.env"
 fi
 
-USERNAME=${USERNAME:-"app"}
 NAME=""
 IP=""
+USERNAME=""
+PRIVATE_KEY_PATH=""
 HOSTS=()
 
 read_hosts() {
+  HOSTS=()
   while IFS= read -r line; do
     if [[ $line == Host* ]]; then
       host=$(echo $line | cut -d " " -f 2)
@@ -21,7 +23,33 @@ read_hosts() {
       HOSTS[$last_index]="${HOSTS[$last_index]}$hostname"
     fi
   done < ~/.ssh/config
-  HOSTS+=("+ Add a new host:NEW")
+  HOSTS+=("+ Add a new host:")
+}
+
+read_host() {
+  PRIVATE_KEY_PATH=''
+  USERNAME=`whoami`
+  in_current=false
+  while IFS= read -r line; do
+    if [[ $line == Host* ]]; then
+      host=$(echo $line | cut -d " " -f 2)
+      if [ "$host" == "$NAME" ]; then
+        in_current=true
+      else
+        in_current=false
+      fi
+    elif [[ $line =~ ^[[:space:]]*User ]]; then
+      hostname=$(echo $line | awk '{print $NF}')
+      if [ "$in_current" = true ]; then
+        USERNAME=$hostname
+      fi
+    elif [[ $line =~ ^[[:space:]]*IdentityFile ]]; then
+      filepath=$(echo $line | awk '{print $NF}')
+      if [ "$in_current" = true ]; then
+        PRIVATE_KEY_PATH=$filepath
+      fi
+    fi
+  done < ~/.ssh/config
 }
 
 choose_host() {
@@ -74,11 +102,12 @@ choose_host() {
       "")
         # Enter key
         IFS=':' read -r NAME IP <<< "${HOSTS[$selected]}"
-        if [[ "${IP}" = "NEW" ]]; then
+        if [[ "${IP}" = "" ]]; then
           clear
           add_to_local_config
           read_hosts
         else
+          read_host
           display_menu
         fi
         ;;
@@ -153,15 +182,48 @@ finish() {
 }
 
 host_title() {
+  line_name="$NAME"
+  line_hostname="Hostname: $IP"
+  line_user="User:     $USERNAME"
+  line_identity=""
+  if [ -n "$PRIVATE_KEY_PATH" ]; then
+    line_identity="Identity: $PRIVATE_KEY_PATH"
+  fi
+  # get length of each line and find max
+  max_length=0
+  for line in "$line_name" "$line_hostname" "$line_user" "$line_identity"; do
+    if [ ${#line} -gt $max_length ]; then
+      max_length=${#line}
+    fi
+  done
+  # make each line the same length
+  line_name=$(printf '%-*s' $max_length "$line_name")
+  line_hostname=$(printf '%-*s' $max_length "$line_hostname")
+  line_user=$(printf '%-*s' $max_length "$line_user")
+  line_identity=$(printf '%-*s' $max_length "$line_identity")
+  # create line of dashes
+  dashes=$(printf '%*s' $max_length '')
+  dashes=${dashes// /-}
+
   clear
-  echo -e "\033[0;31m| $NAME\n| $IP\033[0m\n"
+  echo -e "\033[0;31m| $line_name |
+|-$dashes-|
+| $line_hostname |
+| $line_user |\033[0m"
+  if [ -n "$PRIVATE_KEY_PATH" ]; then
+    echo -e "\033[0;31m| $line_identity |\033[0m"
+  fi
+  echo
 }
 
 add_to_local_config() {
-  echo -en "\033[0;33mName: \033[0m"
+  echo -en "\033[0;33mName:     \033[0m"
   read NAME
-  echo -en "\033[0;33mIP:   \033[0m"
+  echo -en "\033[0;33mHostname: \033[0m"
   read IP
+  echo -en "\033[0;33mUser:     \033[0m"
+  read USERNAME
+  PRIVATE_KEY_PATH=""
   echo -en "\033[0;33mPrivate key (or press Enter for default): \033[0m"
   read PRIVATE_KEY_PATH
   if [ -n "$PRIVATE_KEY_PATH" ]; then

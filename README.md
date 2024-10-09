@@ -53,4 +53,3 @@ Hosts are read from and added to `~/.ssh/config`.
 ## Todo
 
 - **Install Netdata dashboard**: Install Netdata, enable web dashboard, add haproxy with HTTP Basic Auth in front of it
-- Handle different user than app
