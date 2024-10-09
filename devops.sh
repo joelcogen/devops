@@ -67,13 +67,10 @@ choose_host() {
         if [ -z "${ips[$selected]}" ]; then
           clear
           add_to_local_config
-          display_menu
-          return
         else
           NAME="${options[$selected]}"
           IP="${ips[$selected]}"
           display_menu
-          return
         fi
         ;;
     esac
@@ -134,7 +131,7 @@ display_menu() {
           5) host_title; display_menu_ports;;
           6) host_title; test_ports;;
           7) host_title; display_menu_ssh_key;;
-          8) choose_host;;
+          8) break;;
         esac
         ;;
     esac
@@ -156,10 +153,35 @@ add_to_local_config() {
   read NAME
   echo -en "\033[0;33mIP:   \033[0m"
   read IP
-  echo "Host $NAME
+  echo -en "\033[0;33mPrivate key (or press Enter for default): \033[0m"
+  read PRIVATE_KEY_PATH
+  if [ -n "$PRIVATE_KEY_PATH" ]; then
+    if [ ! -f "$PRIVATE_KEY_PATH" ]; then
+      echo -e "\033[0;31mError: File not found at $PRIVATE_KEY_PATH\033[0m"
+      NAME=""
+      IP=""
+      finish
+      return
+    fi
+    if ! ssh-keygen -l -f "$PRIVATE_KEY_PATH" &>/dev/null; then
+      echo -e "\033[0;31mError: Invalid SSH private key file\033[0m"
+      NAME=""
+      IP=""
+      finish
+      return
+    fi
+    echo "Host $NAME
+  HostName $IP
+  User $USERNAME
+  IdentityFile $PRIVATE_KEY_PATH" >> ~/.ssh/config
+  else
+    echo "Host $NAME
   HostName $IP
   User $USERNAME" >> ~/.ssh/config
+  fi
   echo -e "\033[0;32m$(tail -n3 ~/.ssh/config)\033[0m"
+  finish
+  display_menu
 }
 
 check_status() {
