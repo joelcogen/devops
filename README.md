@@ -48,6 +48,8 @@ Hosts are read from and added to `~/.ssh/config`.
 
 **Test ports**: Test which ports are open on the server
 
+**Add SSH key...**: Add an SSH key to the authorized keys
+
 ## Todo
 
 - **Install Netdata dashboard**: Install Netdata, enable web dashboard, add haproxy with HTTP Basic Auth in front of it

@@ -88,6 +88,7 @@ display_menu() {
                 "Install Netdata agent"
                 "Open port..."
                 "Test ports"
+                "Add SSH key..."
                 "Back")
   local selected=0
   local key=""
@@ -132,7 +133,8 @@ display_menu() {
           4) host_title; install_netdata; finish;;
           5) host_title; display_menu_ports;;
           6) host_title; test_ports;;
-          7) choose_host;;
+          7) host_title; display_menu_ssh_key;;
+          8) choose_host;;
         esac
         ;;
     esac
@@ -453,6 +455,68 @@ display_menu_ssh(){
           0) host_title; ssh $NAME; break;;
           1) host_title; ssh root@$NAME; break;;
           2) break;;
+        esac
+        ;;
+    esac
+  done
+}
+
+display_menu_ssh_key(){
+  local options=("$USERNAME" "root" "Back")
+  local selected=0
+  local key=""
+
+  while true; do
+    host_title
+    echo -e "\033[0;33mSelect user:\033[0m\n"
+
+    for i in "${!options[@]}"; do
+      if [ $i -eq $selected ]; then
+        echo -e "\033[0;34m> ${options[$i]}\033[0m"
+      else
+        echo "  ${options[$i]}"
+      fi
+    done
+
+    echo
+    read -rsn1 key
+
+    case "$key" in
+      A)
+        # Up arrow
+        ((selected--))
+        if [ $selected -lt 0 ]; then
+          selected=$((${#options[@]} - 1))
+        fi
+        ;;
+      B)
+        # Down arrow
+        ((selected++))
+        if [ $selected -ge ${#options[@]} ]; then
+          selected=0
+        fi
+        ;;
+      "")
+        # Enter key
+        if [ $selected -eq 2 ]; then
+          break
+        fi
+
+        echo -en "\033[0;33mPublic key path: \033[0m"
+        read public_key_path
+        if [ ! -f "$public_key_path" ]; then
+          echo -e "\033[0;31mError: File not found at $public_key_path\033[0m"
+          finish
+          break
+        fi
+        if ! ssh-keygen -l -f "$public_key_path" &>/dev/null; then
+          echo -e "\033[0;31mError: Invalid SSH public key file\033[0m"
+          finish
+          break
+        fi
+        case $selected in
+          0) host_title; ssh-copy-id -i "$public_key_path" $USERNAME@$NAME && ssh -q -i "$public_key_path" $NAME "echo 'SSH connection successful'"; finish; break;;
+          1) host_title; ssh-copy-id -i "$public_key_path" root@$NAME && ssh -q -i "$public_key_path" root@$NAME "echo 'SSH connection successful'"; finish; break;;
         esac
         ;;
     esac
