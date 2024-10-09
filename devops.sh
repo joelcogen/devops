@@ -201,7 +201,7 @@ check_status() {
 
   # Docker
   echo -e "\033[0;33m⏱ Docker\033[0m"
-  docker_output=$(ssh $NAME "docker -v" 2>/dev/null) || docker_output=""
+  docker_output=$(ssh root@$NAME "docker -v" 2>/dev/null) || docker_output=""
   if echo "$docker_output" | grep -q "Docker version"; then
     echo -en "\033[1A\033[K"
     echo -e "\033[0;32m✔ Docker\033[0m"
