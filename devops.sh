@@ -227,14 +227,14 @@ add_to_local_config() {
   echo -en "\033[0;33mPrivate key (or press Enter for default): \033[0m"
   read PRIVATE_KEY_PATH
   if [ -n "$PRIVATE_KEY_PATH" ]; then
-    if [ ! -f "$PRIVATE_KEY_PATH" ]; then
+    if [ ! -f $(eval echo "$PRIVATE_KEY_PATH") ]; then
       echo -e "\033[0;31mError: File not found at $PRIVATE_KEY_PATH\033[0m"
       NAME=""
       IP=""
       finish
       return
     fi
-    if ! ssh-keygen -l -f "$PRIVATE_KEY_PATH" &>/dev/null; then
+    if ! ssh-keygen -l -f $(eval echo "$PRIVATE_KEY_PATH") &>/dev/null; then
       echo -e "\033[0;31mError: Invalid SSH private key file\033[0m"
       NAME=""
       IP=""
