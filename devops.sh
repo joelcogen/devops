@@ -258,7 +258,7 @@ add_to_local_config() {
 check_status() {
   # SSH
   echo -e "\033[0;33m⏱ SSH root\033[0m"
-  if ssh -o BatchMode=yes -o ConnectTimeout=5 root@$NAME "exit" &> /dev/null; then
+  if ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=5 root@$NAME "exit" &> /dev/null; then
     echo -en "\033[1A\033[K"
     echo -e "\033[0;32m✔ SSH root\033[0m"
   else
