@@ -158,6 +158,9 @@ display_menu() {
           selected=0
         fi
         ;;
+      q)
+        break
+        ;;
       "")
         # Enter key
         case $selected in
@@ -438,6 +441,9 @@ display_menu_ports() {
           selected=0
         fi
         ;;
+      q)
+        break
+        ;;
       "")
         # Enter key
         case $selected in
@@ -543,6 +549,9 @@ display_menu_ssh(){
           selected=0
         fi
         ;;
+      q)
+        break
+        ;;
       "")
         # Enter key
         case $selected in
@@ -589,6 +598,9 @@ display_menu_ssh_key(){
         if [ $selected -ge ${#options[@]} ]; then
           selected=0
         fi
+        ;;
+      q)
+        break
         ;;
       "")
         # Enter key
