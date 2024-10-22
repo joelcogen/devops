@@ -356,10 +356,11 @@ install_docker() {
     usermod -a -G docker $USERNAME"
   ssh $NAME "docker -v"
 
-  # Install UFW-Docker
+  # Install UFW-Docker and allow in on br-+ (docker bridge interfaces created by Kamal)
   ssh root@$NAME "wget -O /usr/local/bin/ufw-docker https://raw.githubusercontent.com/chaifeng/ufw-docker/17e6047590e14d3ff1dc6c01f0b4755d115fc078/ufw-docker && \
     chmod +x /usr/local/bin/ufw-docker && \
     ufw-docker install && \
+    ufw allow in on br-+ && \
     systemctl restart ufw"
 }
 
