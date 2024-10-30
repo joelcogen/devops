@@ -17,7 +17,9 @@ apt install -y -qq haproxy certbot
 
 # Generate
 mkdir -p /certs
-certbot certonly --standalone -d $DOMAIN --cert-path /certs/fullchain.pem --key-path /certs/privkey.pem -m $EMAIL --agree-tos --non-interactive
+certbot certonly -n --agree-tos --standalone -d $DOMAIN -m $EMAIL --config-dir /certs --cert-name haproxy
+cat /certs/live/haproxy/fullchain.pem /certs/live/haproxy/privkey.pem > /certs/haproxy.pem
+chmod 600 /certs/haproxy.pem
 
 # Copy haproxy config
 cp $PWD/haproxy.cfg /etc/haproxy/haproxy.cfg
@@ -28,5 +30,6 @@ echo "0 0 1 * * /certs/update.sh" | crontab -
 echo "Crontab:"
 crontab -l
 
+echo ""
 echo "Done, now edit /etc/haproxy/haproxy.cfg then run:"
 echo "systemctl reload haproxy"

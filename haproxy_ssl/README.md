@@ -1,3 +1,9 @@
+## Preparing
+
+Configure your DNS to have a domain pointing to this server's public IP.
+
+Make sure ports 80 and 443 are open.
+
 ## Setup
 
 As root:
@@ -6,10 +12,10 @@ As root:
 ./install.sh
 ```
 
-Edit `/etc/haproxy/haproxy.cfg` then reload haproxy:
+Edit `/etc/haproxy/haproxy.cfg` then start haproxy:
 
 ```bash
-systemctl reload haproxy
+systemctl enable haproxy
 ```
 
 Certificates and the update script are in `/certs`.
