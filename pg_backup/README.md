@@ -26,6 +26,12 @@ Passing a password (if you skipped step 2):
 PGPASSWORD=YOUR_PASSWORD ./backup.sh HOSTNAME SUBFOLDER KEEP_COUNT
 ```
 
+Using another user or database:
+
+```bash
+PGUSER=YOUR_USER DB=YOUR_DATABASE ./backup.sh HOSTNAME SUBFOLDER KEEP_COUNT
+```
+
 ## Adding to cron
 
 `crontab -e` and add something like:
