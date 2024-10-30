@@ -15,7 +15,7 @@ As root:
 Edit `/etc/haproxy/haproxy.cfg` then start haproxy:
 
 ```bash
-systemctl enable haproxy
+systemctl reload haproxy
 ```
 
 Certificates and the update script are in `/certs`.
