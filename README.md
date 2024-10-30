@@ -53,3 +53,9 @@ Hosts are read from and added to `~/.ssh/config`.
 ## Todo
 
 - **Install Netdata dashboard**: Install Netdata, enable web dashboard, add haproxy with HTTP Basic Auth in front of it
+
+## Other resources
+
+- [Pipe to Mezmo logging script](pipe_to_mezmo/README.md)
+- [Dump PG keeping X backups](pg_backup/README.md)
+- [HAProxy with letsencrypt auto SSL](haproxy_ssl/README.md)
