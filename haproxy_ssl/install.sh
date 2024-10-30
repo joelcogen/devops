@@ -22,6 +22,7 @@ cat /certs/live/haproxy/fullchain.pem /certs/live/haproxy/privkey.pem > /certs/h
 chmod 600 /certs/haproxy.pem
 
 # Copy haproxy config
+cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig
 cp $PWD/haproxy.cfg /etc/haproxy/haproxy.cfg
 
 # Add update script to cron
