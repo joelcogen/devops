@@ -407,7 +407,7 @@ test_ports() {
 }
 
 display_menu_ports() {
-  local options=("On subnet" "On internet" "Back")
+  local options=("On host" "On container" "Back")
   local selected=0
   local key=""
 
@@ -447,8 +447,8 @@ display_menu_ports() {
       "")
         # Enter key
         case $selected in
-          0) host_title; open_subnet_port; finish;;
-          1) host_title; open_internet_port; finish;;
+          0) host_title; open_host_port; finish;;
+          1) host_title; open_container_port; finish;;
           2) break;;
         esac
         ;;
@@ -456,13 +456,13 @@ display_menu_ports() {
   done
 }
 
-open_subnet_port() {
+open_host_port() {
   echo -en "\033[0;33mPort: \033[0m"
   read port
-  ssh root@$NAME "ufw allow from 10.0.0.0/24 to any port $port && ufw status"
+  ssh root@$NAME "ufw allow $port && ufw status"
 }
 
-open_internet_port() {
+open_container_port() {
   echo -e "\033[0;33m⏱ Listing containers...\033[0m"
 
   local options=()

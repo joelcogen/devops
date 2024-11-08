@@ -43,8 +43,8 @@ Hosts are read from and added to `~/.ssh/config`.
 
 **Open port...**:
 
-- **On subnet**: Open a port on the local `10.0.0.0/24` subnet
-- **On internet**: Open a Docker container port to the internet, via ufw-docker
+- **On host**: Open a port in UFW
+- **On container**: Open a Docker container port to the internet, via ufw-docker
 
 **Test ports**: Test which ports are open on the server
 
