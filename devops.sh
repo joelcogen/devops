@@ -340,6 +340,9 @@ basic_setup() {
   echo -e "\033[0;34m>>> CREATE USER $USERNAME <<<\n\033[0m"
   ssh root@$NAME "id -u $USERNAME >/dev/null 2>&1 || adduser --gecos '' --disabled-password $USERNAME && \
     su $USERNAME -c 'mkdir ~/.ssh; chmod 700 ~/.ssh; touch ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys'"
+  if [ -z "$PRIVATE_KEY_PATH" ]; then
+    PRIVATE_KEY_PATH=~/.ssh/id_rsa
+  fi
   scp $(eval echo "$PRIVATE_KEY_PATH").pub root@$NAME:/home/$USERNAME/.ssh/authorized_keys
   ssh root@$NAME "chown $USERNAME:$USERNAME /home/$USERNAME/.ssh/authorized_keys && \
     su $USERNAME -c 'chmod 600 ~/.ssh/authorized_keys'"
