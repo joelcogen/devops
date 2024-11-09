@@ -104,7 +104,7 @@ choose_host() {
       "")
         # Enter key
         IFS=':' read -r NAME IP <<< "${HOSTS[$selected]}"
-        if [[ "${IP}" = "" ]]; then
+        if [[ "${NAME}" = "+ Add a new host" ]]; then
           erase_lines
           add_to_local_config
           read_hosts
@@ -193,7 +193,10 @@ host_title() {
   erase_lines
 
   line_name="$NAME"
-  line_hostname="Hostname: $IP"
+  line_hostname=""
+  if [ -n "$IP" ]; then
+    line_hostname="Hostname: $IP"
+  fi
   line_user="User:     $USERNAME"
   line_identity=""
   if [ -n "$PRIVATE_KEY_PATH" ]; then
@@ -215,28 +218,32 @@ host_title() {
   dashes=$(printf '%*s' $max_length '')
   dashes=${dashes// /-}
 
-  echo -e "\n\033[0;31m| $line_name |
-|-$dashes-|
-| $line_hostname |
-| $line_user |\033[0m"
+  echo -e "\n\033[0;31m| $line_name |\033[0m"
+  echo -e "\033[0;31m|-$dashes-|\033[0m"
+  if [ -n "$IP" ]; then
+    echo -e "\033[0;31m| $line_hostname |\033[0m"
+    PREV_LINES=$(( $PREV_LINES + 1 ))
+  fi
+  echo -e "\033[0;31m| $line_user |\033[0m"
   if [ -n "$PRIVATE_KEY_PATH" ]; then
     echo -e "\033[0;31m| $line_identity |\033[0m"
     PREV_LINES=$(( $PREV_LINES + 1 ))
   fi
   echo
-  PREV_LINES=$(( $PREV_LINES + 6 ))
+  PREV_LINES=$(( $PREV_LINES + 5 ))
 }
 
 add_to_local_config() {
-  echo -en "\033[0;33mName:     \033[0m"
+  echo -en "\033[0;33mName (*):    \033[0m"
   read NAME
-  echo -en "\033[0;33mHostname: \033[0m"
+  echo -en "\033[0;33mHostname:    \033[0m"
   read IP
-  echo -en "\033[0;33mUser:     \033[0m"
+  echo -en "\033[0;33mUser (*):    \033[0m"
   read USERNAME
   PRIVATE_KEY_PATH=""
-  echo -en "\033[0;33mPrivate key (or press Enter for default): \033[0m"
+  echo -en "\033[0;33mPrivate key: \033[0m"
   read PRIVATE_KEY_PATH
+  local lines=4
   if [ -n "$PRIVATE_KEY_PATH" ]; then
     if [ ! -f $(eval echo "$PRIVATE_KEY_PATH") ]; then
       echo -e "\033[0;31mError: File not found at $PRIVATE_KEY_PATH\033[0m"
@@ -256,12 +263,17 @@ add_to_local_config() {
   HostName $IP
   User $USERNAME
   IdentityFile $PRIVATE_KEY_PATH" >> ~/.ssh/config
-  else
+  elif [ -n "$IP" ]; then
     echo "Host $NAME
   HostName $IP
   User $USERNAME" >> ~/.ssh/config
+  lines=3
+  else
+    echo "Host $NAME
+  User $USERNAME" >> ~/.ssh/config
+    lines=2
   fi
-  echo -e "\033[0;32m$(tail -n3 ~/.ssh/config)\033[0m"
+  echo -e "\033[0;32m$(tail -n$lines ~/.ssh/config)\033[0m"
   finish
   display_menu
 }
