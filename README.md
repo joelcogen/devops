@@ -1,13 +1,4 @@
-```
-   _       _      _           _                                           _       _
-  (_)     | |    ( )         | |                                         (_)     | |
-   _  ___ | | ___|/ ___    __| | _____   _____  _ __  ___   ___  ___ _ __ _ _ __ | |_
-  | |/ _ \| |/ _ \ / __|  / _` |/ _ \ \ / / _ \| '_ \/ __| / __|/ __| '__| | '_ \| __|
-  | | (_) | |  __/ \__ \ | (_| |  __/\ V / (_) | |_) \__ \ \__ \ (__| |  | | |_) | |_
-  | |\___/|_|\___| |___/  \__,_|\___| \_/ \___/| .__/|___/ |___/\___|_|  |_| .__/ \__|
- _/ |                                          | |                         | |
-|__/                                           |_|                         |_|
-```
+# devops.sh
 
 A helpful script to maintain servers with:
 
@@ -54,7 +45,7 @@ Hosts are read from and added to `~/.ssh/config`.
 
 - **Install Netdata dashboard**: Install Netdata, enable web dashboard, add haproxy with HTTP Basic Auth in front of it
 
-## Other resources
+# Other resources
 
 - [Pipe to Mezmo logging script](pipe_to_mezmo/README.md)
 - [Dump PG keeping X backups](pg_backup/README.md)

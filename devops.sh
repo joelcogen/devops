@@ -9,6 +9,14 @@ IP=""
 USERNAME=""
 PRIVATE_KEY_PATH=""
 HOSTS=()
+PREV_LINES=0
+
+erase_lines() {
+  for ((i=0; i<$PREV_LINES; i++)); do
+    echo -en "\033[1A\033[K"
+  done
+  PREV_LINES=0
+}
 
 read_hosts() {
   HOSTS=()
@@ -58,15 +66,8 @@ choose_host() {
   local key=""
 
   while true; do
-    clear
-    echo -e "\033[0;31m   _       _      _           _                                           _       _   \033[0m"
-    echo -e "\033[0;31m  (_)     | |    ( )         | |                                         (_)     | |  \033[0m"
-    echo -e "\033[0;31m   _  ___ | | ___|/ ___    __| | _____   _____  _ __  ___   ___  ___ _ __ _ _ __ | |_ \033[0m"
-    echo -e "\033[0;31m  | |/ _ \| |/ _ \ / __|  / _\` |/ _ \ \ / / _ \| '_ \/ __| / __|/ __| '__| | '_ \| __|\033[0m"
-    echo -e "\033[0;31m  | | (_) | |  __/ \__ \ | (_| |  __/\ V / (_) | |_) \__ \ \__ \ (__| |  | | |_) | |_ \033[0m"
-    echo -e "\033[0;31m  | |\___/|_|\___| |___/  \__,_|\___| \_/ \___/| .__/|___/ |___/\___|_|  |_| .__/ \__|\033[0m"
-    echo -e "\033[0;31m _/ |                                          | |                         | |        \033[0m"
-    echo -e "\033[0;31m|__/                                           |_|                         |_|        \033[0m"
+    erase_lines
+    echo -e "\n\033[0;31mjole's devops script\033[0m"
     echo -e "\033[0;33m\nSelect host:\033[0m\n"
 
     for i in "${!HOSTS[@]}"; do
@@ -77,8 +78,9 @@ choose_host() {
         printf "  %-30s %s\n" "$host" "$ip"
       fi
     done
-
     echo
+    PREV_LINES=$(( ${#HOSTS[@]} + 6 ))
+
     read -rsn1 key
 
     case "$key" in
@@ -103,7 +105,7 @@ choose_host() {
         # Enter key
         IFS=':' read -r NAME IP <<< "${HOSTS[$selected]}"
         if [[ "${IP}" = "" ]]; then
-          clear
+          erase_lines
           add_to_local_config
           read_hosts
         else
@@ -139,8 +141,10 @@ display_menu() {
         echo "  ${options[$i]}"
       fi
     done
-
     echo
+
+    PREV_LINES=$(( $PREV_LINES + 12 ))
+
     read -rsn1 key
 
     case "$key" in
@@ -182,9 +186,12 @@ display_menu() {
 finish() {
   echo -e "\n\033[0;33mPress any key to continue\033[0m"
   read -n 1 -s
+  PREV_LINES=0
 }
 
 host_title() {
+  erase_lines
+
   line_name="$NAME"
   line_hostname="Hostname: $IP"
   line_user="User:     $USERNAME"
@@ -208,15 +215,16 @@ host_title() {
   dashes=$(printf '%*s' $max_length '')
   dashes=${dashes// /-}
 
-  clear
-  echo -e "\033[0;31m| $line_name |
+  echo -e "\n\033[0;31m| $line_name |
 |-$dashes-|
 | $line_hostname |
 | $line_user |\033[0m"
   if [ -n "$PRIVATE_KEY_PATH" ]; then
     echo -e "\033[0;31m| $line_identity |\033[0m"
+    PREV_LINES=$(( $PREV_LINES + 1 ))
   fi
   echo
+  PREV_LINES=$(( $PREV_LINES + 6 ))
 }
 
 add_to_local_config() {
@@ -407,6 +415,8 @@ test_ports() {
     fi
     nc -zG2 $IP $additional_port &> /dev/null && echo -e "\033[0;32m$additional_port: open\033[0m" || echo -e "\033[0;31m$additional_port: closed\033[0m"
   done
+
+  PREV_LINES=0
 }
 
 display_menu_ports() {
@@ -425,8 +435,10 @@ display_menu_ports() {
         echo "  ${options[$i]}"
       fi
     done
-
     echo
+
+    PREV_LINES=$(( $PREV_LINES + 6 ))
+
     read -rsn1 key
 
     case "$key" in
@@ -533,8 +545,10 @@ display_menu_ssh(){
         echo "  ${options[$i]}"
       fi
     done
-
     echo
+
+    PREV_LINES=$(( $PREV_LINES + 6 ))
+
     read -rsn1 key
 
     case "$key" in
@@ -583,8 +597,10 @@ display_menu_ssh_key(){
         echo "  ${options[$i]}"
       fi
     done
-
     echo
+
+    PREV_LINES=$(( $PREV_LINES + 6 ))
+
     read -rsn1 key
 
     case "$key" in
