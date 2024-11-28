@@ -415,8 +415,12 @@ install_netdata() {
 
 test_ports() {
   local ports=(22 80 443 3000 5432 6379 19999)
+  local ip_to_test=$IP
+  if [ -z "$ip_to_test" ]; then
+    ip_to_test=$NAME
+  fi
   for port in "${ports[@]}"; do
-    nc -zG2 $IP $port &> /dev/null && echo -e "\033[0;32m$port: open\033[0m" || echo -e "\033[0;31m$port: closed\033[0m"
+    nc -zG2 $ip_to_test $port &> /dev/null && echo -e "\033[0;32m$port: open\033[0m" || echo -e "\033[0;31m$port: closed\033[0m"
   done
 
   while true; do
