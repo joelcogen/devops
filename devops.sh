@@ -126,6 +126,7 @@ display_menu() {
                 "Open port..."
                 "Test ports"
                 "Add SSH key..."
+                "Upgrade apt"
                 "Back")
   local selected=0
   local key=""
@@ -143,7 +144,7 @@ display_menu() {
     done
     echo
 
-    PREV_LINES=$(( $PREV_LINES + 12 ))
+    PREV_LINES=$(( $PREV_LINES + 13 ))
 
     read -rsn1 key
 
@@ -176,7 +177,8 @@ display_menu() {
           5) host_title; display_menu_ports;;
           6) host_title; test_ports;;
           7) host_title; display_menu_ssh_key;;
-          8) break;;
+          8) host_title; upgrade_apt; finish;;
+          9) break;;
         esac
         ;;
     esac
@@ -662,6 +664,38 @@ display_menu_ssh_key(){
         ;;
     esac
   done
+}
+
+upgrade_apt() {
+  echo -e "\033[0;34mRunning containers:\033[0m"
+  local CONTAINERS=$(ssh -o StrictHostKeyChecking=accept-new root@$NAME "docker ps --format '{{.Names}}'")
+  echo "$CONTAINERS"
+
+  echo -e "\033[0;34mUpgrading...\033[0m"
+  ssh root@$NAME "DEBIAN_FRONTEND=noninteractive apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get upgrade -q -y"
+
+  if ssh root@$NAME "[ -f /var/run/reboot-required ] && reboot"; then
+    echo -e "\033[0;34mWaiting for server to reboot...\033[0m"
+    sleep 5
+    local OK=false
+    while ! $OK; do
+      sleep 5
+      ssh root@$NAME "echo 'OK'" && OK=true
+    done
+  else
+    echo "No reboot needed"
+  fi
+
+  echo -e "\033[0;34mRunning containers after upgrade:\033[0m"
+  local NEW_CONTAINERS=$(ssh root@$NAME "docker ps --format '{{.Names}}'")
+  echo "$NEW_CONTAINERS"
+  if [ "$NEW_CONTAINERS" != "$CONTAINERS" ]; then
+    echo -e "\033[0;31mWarning: Container list changed after reboot!\033[0m"
+    echo -e "\033[0;31mBefore:\n$CONTAINERS\033[0m"
+    echo -e "\033[0;31mAfter:\n$NEW_CONTAINERS\033[0m"
+  else
+    echo -e "\n\033[0;32mSuccess\033[0m"
+  fi
 }
 
 choose_host
