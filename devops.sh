@@ -407,9 +407,11 @@ install_netdata() {
     read NETDATA_API_KEY
   fi
 
-  ssh root@$NAME "DEBIAN_FRONTEND=noninteractive bash <(curl -Ss https://get.netdata.cloud/kickstart.sh) && \
-    echo -e '[stream]\n    enabled = yes\n    destination = $NETDATA_DESTINATION:19999\n    api key = $NETDATA_API_KEY' > /etc/netdata/stream.conf && \
-    cat /etc/netdata/stream.conf && \
+  ssh root@$NAME "curl https://get.netdata.cloud/kickstart.sh > /tmp/netdata-kickstart.sh && \
+    DEBIAN_FRONTEND=noninteractive sh /tmp/netdata-kickstart.sh --stable-channel && \
+    cd /etc/netdata 2>/dev/null || cd /opt/netdata/etc/netdata && \
+    echo -e '[stream]\n    enabled = yes\n    destination = $NETDATA_DESTINATION:19999\n    api key = $NETDATA_API_KEY' > stream.conf && \
+    cat stream.conf && \
     systemctl restart netdata"
 
   echo -e "NETDATA_DESTINATION=$NETDATA_DESTINATION\nNETDATA_API_KEY=$NETDATA_API_KEY" > "$(dirname "$0")/.env"
