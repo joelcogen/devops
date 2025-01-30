@@ -27,7 +27,7 @@ cp $PWD/haproxy.cfg /etc/haproxy/haproxy.cfg
 
 # Add update script to cron
 cp $PWD/update.sh /certs/update.sh
-echo "0 0 1 * * /certs/update.sh" | crontab -
+(crontab -l 2>/dev/null; echo "0 0 1 * * /certs/update.sh") | crontab -
 echo "Crontab:"
 crontab -l
 
