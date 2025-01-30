@@ -444,7 +444,7 @@ install_betterstack() {
 
   ssh root@$NAME "curl -sSL https://telemetry.betterstack.com/setup-vector/docker/$BETTERSTACK_KEY -o /tmp/setup-vector.sh && \
     echo \n | bash /tmp/setup-vector.sh && \
-    usermod -a -G docker vector && \
+    usermod -a -G docker vector || true && \
     systemctl restart vector"
 
   echo -e "NETDATA_DESTINATION=$NETDATA_DESTINATION\nNETDATA_API_KEY=$NETDATA_API_KEY\nBETTERSTACK_KEY=$BETTERSTACK_KEY" > "$(dirname "$0")/.env"
