@@ -249,7 +249,7 @@ add_to_local_config() {
   PRIVATE_KEY_PATH=""
   echo -en "\033[0;33mPrivate key: \033[0m"
   read PRIVATE_KEY_PATH
-  local lines=4
+  local lines=2
   if [ -n "$PRIVATE_KEY_PATH" ]; then
     if [ ! -f $(eval echo "$PRIVATE_KEY_PATH") ]; then
       echo -e "\033[0;31mError: File not found at $PRIVATE_KEY_PATH\033[0m"
@@ -265,19 +265,16 @@ add_to_local_config() {
       finish
       return
     fi
-    echo "Host $NAME
-  HostName $IP
-  User $USERNAME
-  IdentityFile $PRIVATE_KEY_PATH" >> ~/.ssh/config
-  elif [ -n "$IP" ]; then
-    echo "Host $NAME
-  HostName $IP
-  User $USERNAME" >> ~/.ssh/config
-  lines=3
-  else
-    echo "Host $NAME
-  User $USERNAME" >> ~/.ssh/config
-    lines=2
+  fi
+  echo "Host $NAME" >> ~/.ssh/config
+  if [ -n "$IP" ]; then
+    echo "  HostName $IP" >> ~/.ssh/config
+    lines+=1
+  fi 
+  echo "  User $USERNAME" >> ~/.ssh/config
+  if [ -n "$PRIVATE_KEY_PATH" ]; then
+    echo "  IdentityFile $PRIVATE_KEY_PATH" >> ~/.ssh/config
+    lines+=1
   fi
   echo -e "\033[0;32m$(tail -n$lines ~/.ssh/config)\033[0m"
   finish
