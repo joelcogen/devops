@@ -6,6 +6,17 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Check for existing cert
+if [ -d "/certs/live/haproxy" ]; then
+    echo "Cert already exists:"
+    openssl x509 -in /certs/haproxy.pem -text -noout | grep DNS
+    read -p "Do you want to overwrite it? (y/n): " OVERWRITE
+    if [ "$OVERWRITE" != "y" ]; then
+        echo "Exiting"
+        exit 0
+    fi
+fi
+
 # Prompt for DOMAIN and EMAIL
 read -p "Enter the domains (comma separated): " DOMAIN
 read -p "Enter the e-mail: " EMAIL
@@ -22,8 +33,7 @@ cat /certs/live/haproxy/fullchain.pem /certs/live/haproxy/privkey.pem > /certs/h
 chmod 600 /certs/haproxy.pem
 
 # Copy haproxy config
-cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig
-cp $PWD/haproxy.cfg /etc/haproxy/haproxy.cfg
+cp $PWD/haproxy.cfg /etc/haproxy/haproxy.cfg.example
 
 # Add update script to cron
 cp $PWD/update.sh /certs/update.sh
@@ -32,5 +42,6 @@ echo "Crontab:"
 crontab -l
 
 echo ""
-echo "Done, now edit /etc/haproxy/haproxy.cfg then run:"
-echo "systemctl reload haproxy"
+echo "Done."
+echo "To use base config: cp /etc/haproxy/haproxy.cfg.example /etc/haproxy/haproxy.cfg"
+echo "After editing /etc/haproxy/haproxy.cfg, run: systemctl reload haproxy"
