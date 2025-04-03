@@ -1,0 +1,1 @@
+0 0 1 * * /certs/update.sh >> /certs/update.log 2>&1
