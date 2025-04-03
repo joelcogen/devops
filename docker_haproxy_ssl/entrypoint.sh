@@ -25,4 +25,4 @@ chmod 600 /certs/haproxy.pem
 crontab /crontab
 crond
 
-exec su -s /bin/sh haproxy -c "exec $*"
+exec "$@"
