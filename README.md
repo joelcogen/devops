@@ -50,3 +50,4 @@ Hosts are read from and added to `~/.ssh/config`.
 - [Pipe to Mezmo logging script](pipe_to_mezmo/README.md)
 - [Dump PG keeping X backups](pg_backup/README.md)
 - [HAProxy with letsencrypt auto SSL](haproxy_ssl/README.md)
+- [Docker image of HAProxy with letsencrypt auto SSL](docker_haproxy_ssl/README.md)
