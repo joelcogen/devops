@@ -18,7 +18,10 @@ if [ ! -f "/haproxy.cfg" ]; then
     exit 1
 fi
 
-certbot certonly -n --agree-tos --standalone -d $DOMAIN -m $EMAIL --config-dir /certs --cert-name haproxy
+local done=false
+while [ "$done" = false ]; do
+    certbot certonly -n --agree-tos --standalone -d $DOMAIN -m $EMAIL --config-dir /certs --cert-name haproxy && done=true || sleep 10
+done
 cat /certs/live/haproxy/fullchain.pem /certs/live/haproxy/privkey.pem > /certs/haproxy.pem
 chmod 600 /certs/haproxy.pem
 
