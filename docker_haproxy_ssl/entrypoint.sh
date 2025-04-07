@@ -18,7 +18,7 @@ if [ ! -f "/haproxy.cfg" ]; then
     exit 1
 fi
 
-local done=false
+done=false
 while [ "$done" = false ]; do
     certbot certonly -n --agree-tos --standalone -d $DOMAIN -m $EMAIL --config-dir /certs --cert-name haproxy && done=true || sleep 10
 done
