@@ -32,6 +32,10 @@ Hosts are read from and added to `~/.ssh/config`.
 
 **Install Netdata agent**: Install and setup Netdata agent
 
+**Uninstall Netdata agent**: Uninstall Netdata agent
+
+**Install BetterStack (Vector/Docker)**: Install the BetterStack agent Vector, with Docker support
+
 **Open port...**:
 
 - **On host**: Open a port in UFW
@@ -41,12 +45,11 @@ Hosts are read from and added to `~/.ssh/config`.
 
 **Add SSH key...**: Add an SSH key to the authorized keys
 
-## Todo
-
-- **Install Netdata dashboard**: Install Netdata, enable web dashboard, add haproxy with HTTP Basic Auth in front of it
+**Upgrade apt**: Upgrade packages and reboot if required
 
 # Other resources
 
+- [Docker Servers Status Scripts](status/README.md)
 - [Pipe to Mezmo logging script](pipe_to_mezmo/README.md)
 - [Dump PG keeping X backups](pg_backup/README.md)
 - [HAProxy with letsencrypt auto SSL](haproxy_ssl/README.md)

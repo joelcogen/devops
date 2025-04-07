@@ -1,0 +1,12 @@
+staging:
+  - name: api.staging.myapp.com
+    containers:
+      - myapp-staging
+  - name: db.staging.myapp.com
+    containers:
+      - myapp-postgres-staging
+    proxy: false
+  - name: barebone.myapp.com
+    docker: false
+production:
+# ...you get the idea...
