@@ -8,11 +8,14 @@ require "thread"
 USAGE_CMD = "mpstat | grep 'all' | awk '{printf \"%d\\n\", 100-\$NF}'; free -m | grep 'Mem:' | awk '{printf \"%d\\n\", (\$3/\$2)*100}';"
 UPDATES_CMD = "[ -f /var/run/reboot-required ] && echo 'REBOOT REQUIRED' || (UPDATES=$(apt-get upgrade -s | grep '^Inst' | cut -d' ' -f2); [ -z \"$UPDATES\" ] && echo 'UP TO DATE' || echo 'UPDATES AVAILABLE');"
 DOCKER_CMD = "docker ps --format '{{json .}}';"
+DISK_CMD = "df | grep ' __MNT__$' | awk '{print $5+0}';"
 
 CPU_WARN = 50
 CPU_DANGER = 80
 MEM_WARN = 70
 MEM_DANGER = 85
+DISK_WARN = 80
+DISK_DANGER = 90
 
 config_path = File.join(File.dirname(__FILE__), "config.yml")
 
@@ -35,15 +38,18 @@ end
 def process_server(server, out)
   out_server = server["name"].ljust(42)
 
-  cmd = USAGE_CMD + UPDATES_CMD + (server["docker"] == false ? "" : DOCKER_CMD)
+  disks = server["disks"] || ["/"]
+  disk_cmd = disks.map { |disk| DISK_CMD.gsub("__MNT__", disk) }.join(" ")
+
+  cmd = USAGE_CMD + UPDATES_CMD + disk_cmd + (server["docker"] == false ? "" : DOCKER_CMD)
 
   ssh_options = {}
   ssh_options[:keys] = [server["identity_file"]] if server["identity_file"]
 
   Net::SSH.start(server["hostname"] || server["name"], server["user"] || "root", ssh_options) do |ssh|
     output = ssh.exec!(cmd)
-
-    cpu, mem, updates, docker = output.split("\n", 4)
+   
+    cpu, mem, updates, *disks, docker = output.split("\n", 4 + disks.count)
 
     out_cpu = if cpu =~ /^\d+$/
       cpu = cpu.to_i
@@ -54,11 +60,15 @@ def process_server(server, out)
     end 
 
     mem = mem.to_i
-    out_mem = "MEM: #{mem}%".ljust(12)
+    out_mem = "MEM: #{mem}%".ljust(10)
     out_mem = mem > MEM_DANGER ? red(out_mem) : mem > MEM_WARN ? yellow(out_mem) : green(out_mem)
 
     out_updates = updates.ljust(20)
     out_updates = updates == "UP TO DATE" ? green(out_updates) : updates == "REBOOT REQUIRED" ? red(out_updates) : yellow(out_updates)
+
+    disks = disks.map { |disk| disk.to_i }
+    out_disk = ("DISK: " + disks.map { |disk| "#{disk}%" }.join(", ")).ljust(16)
+    out_disk = disks.any? { |disk| disk > DISK_DANGER } ? red(out_disk) : disks.any? { |disk| disk > DISK_WARN } ? yellow(out_disk) : green(out_disk)
 
     out_docker = unless server["docker"] == false
       running = docker.lines.map do |line|
@@ -83,7 +93,7 @@ def process_server(server, out)
 
     # Use mutex to ensure thread-safe output
     $output_mutex.synchronize do
-      out << "#{out_server} #{out_cpu} #{out_mem} #{out_updates} #{out_docker}"
+      out << "#{out_server} #{out_cpu} #{out_mem} #{out_disk} #{out_updates} #{out_docker}"
     end
     print "."
   end 

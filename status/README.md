@@ -3,6 +3,7 @@
 Will connect to all your servers (in parallel) and report:
 
 - CPU and memory usage
+- Disk usage
 - If updates are available and if a reboot is required
 - Running Docker containers against a given list, noting missing and extras
 
@@ -27,6 +28,7 @@ For each server:
 - `docker` : whether to expect Docker running at all. Defaults to true
 - `user` : SSH user. Defaults to `root`
 - `identity_file` : path to SSH key
+- `disks` : a list of mount points to check for usage. Defaults to `["/"]`
 
 Example:
 
@@ -44,6 +46,9 @@ staging:
     docker: false
     user: ubuntu
     identity_file: ~/keys/barebone.pem
+    disks:
+      - "/"
+      - "/mnt/data"
 production:
 # ...
 ```
