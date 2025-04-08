@@ -37,7 +37,10 @@ def process_server(server, out)
 
   cmd = USAGE_CMD + UPDATES_CMD + (server["docker"] == false ? "" : DOCKER_CMD)
 
-  Net::SSH.start(server["name"], "root") do |ssh|
+  ssh_options = {}
+  ssh_options[:keys] = [server["identity_file"]] if server["identity_file"]
+
+  Net::SSH.start(server["name"], server["user"] || "root", ssh_options) do |ssh|
     output = ssh.exec!(cmd)
 
     cpu, mem, updates, docker = output.split("\n", 4)

@@ -20,8 +20,10 @@ For each server:
 
 - `name` : the hostname of the server
 - `containers` : a list of containers expected to run. Matched as start of running containers. E.g. `myapp-staging` will match running container `myapp-staging-latest-123abc`.
-- `proxy` : wether to expect `kamal-proxy`. Defaults to true
-- `docker` : wether to expect Docker running at all. Defaults to true
+- `proxy` : whether to expect `kamal-proxy`. Defaults to true
+- `docker` : whether to expect Docker running at all. Defaults to true
+- `user` : SSH user. Defaults to `root`
+- `identity_file` : path to SSH key
 
 Example:
 
@@ -36,6 +38,8 @@ staging:
     proxy: false
   - name: barebone.myapp.com
     docker: false
+    user: ubuntu
+    identity_file: ~/keys/barebone.pem
 production:
 # ...
 ```
