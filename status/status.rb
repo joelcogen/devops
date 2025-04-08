@@ -40,7 +40,7 @@ def process_server(server, out)
   ssh_options = {}
   ssh_options[:keys] = [server["identity_file"]] if server["identity_file"]
 
-  Net::SSH.start(server["name"], server["user"] || "root", ssh_options) do |ssh|
+  Net::SSH.start(server["hostname"] || server["name"], server["user"] || "root", ssh_options) do |ssh|
     output = ssh.exec!(cmd)
 
     cpu, mem, updates, docker = output.split("\n", 4)

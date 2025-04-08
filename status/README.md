@@ -20,7 +20,8 @@ Root keys are groups with arrays of servers.
 
 For each server:
 
-- `name` : the hostname of the server
+- `name` : the name/hostname of the server
+- `hostname` : the hostname. Defaults to name
 - `containers` : a list of containers expected to run. Matched as start of running containers. E.g. `myapp-staging` will match running container `myapp-staging-latest-123abc`.
 - `proxy` : whether to expect `kamal-proxy`. Defaults to true
 - `docker` : whether to expect Docker running at all. Defaults to true
@@ -38,7 +39,8 @@ staging:
     containers:
       - myapp-postgres-staging
     proxy: false
-  - name: barebone.myapp.com
+  - name: Barebone Server 1
+    hostname: 1.2.3.4
     docker: false
     user: ubuntu
     identity_file: ~/keys/barebone.pem
