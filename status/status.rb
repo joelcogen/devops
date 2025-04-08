@@ -45,9 +45,13 @@ def process_server(server, out)
 
     cpu, mem, updates, docker = output.split("\n", 4)
 
-    cpu = cpu.to_i
-    out_cpu = "CPU: #{cpu}%".ljust(10)
-    out_cpu = cpu > CPU_DANGER ? red(out_cpu) : cpu > CPU_WARN ? yellow(out_cpu) : green(out_cpu)
+    out_cpu = if cpu =~ /^\d+$/
+      cpu = cpu.to_i
+      out_cpu = "CPU: #{cpu}%".ljust(10)
+      cpu > CPU_DANGER ? red(out_cpu) : cpu > CPU_WARN ? yellow(out_cpu) : green(out_cpu)
+    else
+      red("CPU: ???".ljust(10))
+    end 
 
     mem = mem.to_i
     out_mem = "MEM: #{mem}%".ljust(12)

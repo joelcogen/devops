@@ -12,6 +12,8 @@ Will connect to all your servers (in parallel) and report:
 
 You will need Ruby >3. I don't think you need any gems.
 
+You need _mpstat_ on your servers. It's part of the default Ubuntu install but not the AWS version. If you see "CPU: ???", run: `sudo apt install sysstat`
+
 ### config.yml
 
 Root keys are groups with arrays of servers.
