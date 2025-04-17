@@ -554,7 +554,9 @@ open_container_port() {
       else
         echo "  ${options[$i]}"
       fi
+      PREV_LINES=$(( $PREV_LINES + 1 ))
     done
+    PREV_LINES=$(( $PREV_LINES + 3 ))
 
     echo
     read -rsn1 key
@@ -573,6 +575,9 @@ open_container_port() {
         if [ $selected -ge ${#options[@]} ]; then
           selected=0
         fi
+        ;;
+      q)
+        break
         ;;
       "")
         # Enter key
