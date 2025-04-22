@@ -377,7 +377,13 @@ basic_setup() {
   if [ -z "$PRIVATE_KEY_PATH" ]; then
     PRIVATE_KEY_PATH=~/.ssh/id_rsa
   fi
-  scp $(eval echo "$PRIVATE_KEY_PATH").pub root@$NAME:/home/$USERNAME/.ssh/authorized_keys
+  KEY_PATH="$(eval echo "$PRIVATE_KEY_PATH")"
+  PUB_KEY_PATH="${KEY_PATH}.pub"
+  if [ ! -f "$PUB_KEY_PATH" ]; then
+    echo -e "\033[0;33mPublic key $PUB_KEY_PATH not found, deriving from private key...\033[0m"
+    ssh-keygen -y -f "$KEY_PATH" > "$PUB_KEY_PATH"
+  fi
+  scp "$PUB_KEY_PATH" root@$NAME:/home/$USERNAME/.ssh/authorized_keys
   ssh root@$NAME "chown $USERNAME:$USERNAME /home/$USERNAME/.ssh/authorized_keys && \
     su $USERNAME -c 'chmod 600 ~/.ssh/authorized_keys'"
   ssh $NAME "echo 'SSH connection successful'"
