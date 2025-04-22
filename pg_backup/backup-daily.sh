@@ -1,22 +1,18 @@
 #!/bin/bash -e
 
 # Set variables
-HOST="$1"
+HOURLY="$1"
 BNAME="$2"
+SOURCE_DIR="/mnt/backups/$HOURLY"
 BACKUP_DIR="/mnt/backups/$BNAME"
 BACKUP_COUNT=$3
-PGUSER=${PGUSER:-app}
-DB=${DB:-app}
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 FILENAME="$BACKUP_DIR/backup_$TIMESTAMP.dump"
 
 # Create backup directory if it doesn't exist
 mkdir -p "$BACKUP_DIR"
 
-echo "$BNAME : Starting dump from $HOST/$DB"
-
-# Perform PostgreSQL dump
-ssh -o StrictHostKeyChecking=accept-new $HOST "docker exec \$(docker ps --format \"{{.Names}}\" | grep postgres) pg_dump -Fc -U $PGUSER -d $DB" > $FILENAME
+cp -L "$SOURCE_DIR/latest" $FILENAME
 ln -sf $FILENAME "$BACKUP_DIR/latest"
 
 # Remove oldest files, keeping only the 5 most recent
