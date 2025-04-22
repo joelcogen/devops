@@ -349,6 +349,17 @@ check_status() {
     echo -en "\033[1A\033[K"
     echo -e "\033[0;31m✘ Netdata\033[0m"
   fi
+
+  # BetterStack
+  echo -e "\033[0;33m⏱ BetterStack\033[0m"
+  betterstack_output=$(ssh root@$NAME "systemctl status vector" 2>/dev/null) || betterstack_output=""
+  if echo "$betterstack_output" | grep -q "Active: active"; then
+    echo -en "\033[1A\033[K"
+    echo -e "\033[0;32m✔ BetterStack\033[0m"
+  else
+    echo -en "\033[1A\033[K"
+    echo -e "\033[0;31m✘ BetterStack\033[0m"
+  fi
 }
 
 basic_setup() {
@@ -443,13 +454,6 @@ install_betterstack() {
     echo \n | bash /tmp/setup-vector.sh && \
     usermod -a -G docker vector || true && \
     systemctl restart vector"
-
-  echo -e "REBOOT_REQUIRED=\$([ -f /var/run/reboot-required ] && echo 'REBOOT REQUIRED' || (UPDATES=\$(apt-get upgrade -s | grep '^Inst' | cut -d' ' -f2); [ -z "\$UPDATES" ] && echo 'UP TO DATE' || echo 'UPDATES AVAILABLE'))\ncurl -X POST https://in.logs.betterstack.com -H 'Authorization: Bearer $BETTERSTACK_KEY' -H 'Content-Type: application/json' -d \"{\\\"message\\\":\\\"\$REBOOT_REQUIRED\\\",\\\"updates_required\\\":\\\"\$REBOOT_REQUIRED\\\",\\\"docker\\\":{\\\"host\\\":\\\"\$(hostname)\\\"}}\"" > "$(dirname "$0")/reboot_required.sh"
-  scp "$(dirname "$0")/reboot_required.sh" root@$NAME:/root/reboot_required.sh
-  rm "$(dirname "$0")/reboot_required.sh"
-  ssh root@$NAME "chmod +x /root/reboot_required.sh && \
-    /root/reboot_required.sh && \
-    (crontab -l 2>/dev/null; echo '0 0 * * 0 /root/reboot_required.sh') | crontab -"
 
   echo -e "NETDATA_DESTINATION=$NETDATA_DESTINATION\nNETDATA_API_KEY=$NETDATA_API_KEY\nBETTERSTACK_KEY=$BETTERSTACK_KEY" > "$(dirname "$0")/.env"
 }
