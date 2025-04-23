@@ -1,6 +1,6 @@
 ## Usage
 
-    docker run -v /path/to/haproxy.cfg:/haproxy.cfg -e DOMAIN=example.com -e EMAIL=test@example.com --publish "80:80" --publish "443:443" joelcogen/haproxy_ssl
+    docker run -v /path/to/haproxy.cfg:/haproxy.cfg -e DOMAIN=example.com -e EMAIL=test@example.com --publish "80:80" --publish "443:443" --restart=always joelcogen/haproxy_ssl
 
 - `DOMAIN` can contain multiple domains, separated by a comma. DNS must already point to your host for SSL verification to work
 - `EMAIL` can be any e-mail where letsencrypt can reach you
@@ -19,4 +19,6 @@ Some notes:
 
 ### How it works
 
-The entrypoint will generate a new certificate for given domains and start a cron to update every 1st of the month at midnight. Certificates are valid 3 months.
+The entrypoint will generate a new certificate for given domains.
+
+Container forces restart every 45 days to get fresh certificates. You must have `--restart=always` or `unless-stopped`.
