@@ -1,10 +1,11 @@
 ## Usage
 
-    docker run -v /path/to/haproxy.cfg:/haproxy.cfg -e DOMAIN=example.com -e EMAIL=test@example.com --publish "80:80" --publish "443:443" --restart=always joelcogen/haproxy_ssl
+    docker run -v /path/to/haproxy.cfg:/haproxy.cfg -v ./certs:/certs -e DOMAIN=example.com -e EMAIL=test@example.com --publish "80:80" --publish "443:443" --restart=always joelcogen/haproxy_ssl
 
 - `DOMAIN` can contain multiple domains, separated by a comma. DNS must already point to your host for SSL verification to work
 - `EMAIL` can be any e-mail where letsencrypt can reach you
 - You must expose port 80 for SSL verirication to work
+- I recommend mounting `/certs` to a host folder so certificates are kept between deployments
 
 ### haproxy.cfg
 
