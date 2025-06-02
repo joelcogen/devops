@@ -439,7 +439,7 @@ uninstall_netdata() {
   echo -e "\033[0;34m>>> UNINSTALLING NETDATA <<<\n\033[0m"
   ssh root@$NAME "systemctl stop netdata || true && \
     systemctl disable netdata || true && \
-    apt-get remove -y --autoremove netdata && \
+    apt-get remove -y --autoremove netdata* && \
     rm -rf /etc/netdata /var/lib/netdata /var/cache/netdata /var/log/netdata /opt/netdata && \
     userdel netdata 2>/dev/null || true && \
     find / -name '*netdata*' -type d -exec rm -rf {} + 2>/dev/null || true && \
