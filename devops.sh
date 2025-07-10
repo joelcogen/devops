@@ -335,17 +335,6 @@ check_status() {
     echo -e "\033[0;31m✘ Docker\033[0m"
   fi
 
-  # Netdata
-  echo -e "\033[0;33m⏱ Netdata\033[0m"
-  netdata_output=$(ssh root@$NAME "systemctl status netdata" 2>/dev/null) || netdata_output=""
-  if echo "$netdata_output" | grep -q "Active: active"; then
-    echo -en "\033[1A\033[K"
-    echo -e "\033[0;32m✔ Netdata\033[0m"
-  else
-    echo -en "\033[1A\033[K"
-    echo -e "\033[0;31m✘ Netdata\033[0m"
-  fi
-
   # BetterStack
   echo -e "\033[0;33m⏱ BetterStack\033[0m"
   betterstack_output=$(ssh root@$NAME "systemctl status vector" 2>/dev/null) || betterstack_output=""
