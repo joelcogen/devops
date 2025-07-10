@@ -122,8 +122,6 @@ display_menu() {
                 "Check status"
                 "Basic setup"
                 "Install Docker"
-                "Install Netdata agent"
-                "Uninstall Netdata agent"
                 "Install BetterStack (Vector/Docker)"
                 "Open port..."
                 "Test ports"
@@ -146,7 +144,7 @@ display_menu() {
     done
     echo
 
-    PREV_LINES=$(( $PREV_LINES + 15 ))
+    PREV_LINES=$(( $PREV_LINES + 13 ))
 
     read -rsn1 key
 
@@ -175,14 +173,12 @@ display_menu() {
           1) host_title; check_status; finish;;
           2) host_title; basic_setup; finish;;
           3) host_title; install_docker; finish;;
-          4) host_title; install_netdata; finish;;
-          5) host_title; uninstall_netdata; finish;;
-          6) host_title; install_betterstack; finish;;
-          7) host_title; display_menu_ports;;
-          8) host_title; test_ports;;
-          9) host_title; display_menu_ssh_key;;
-          10) host_title; upgrade_apt; finish;;
-          11) break;;
+          4) host_title; install_betterstack; finish;;
+          5) host_title; display_menu_ports;;
+          6) host_title; test_ports;;
+          7) host_title; display_menu_ssh_key;;
+          8) host_title; upgrade_apt; finish;;
+          9) break;;
         esac
         ;;
     esac
@@ -408,42 +404,6 @@ install_docker() {
     ufw-docker install && \
     ufw allow in on br-+ && \
     systemctl restart ufw"
-}
-
-install_netdata() {
-  if [ -n "$NETDATA_DESTINATION" ] && [ -n "$NETDATA_API_KEY" ]; then
-    echo -en "\033[0;33mNetdata destination (\033[0;37m$NETDATA_DESTINATION\033[0;33m): \033[0m"
-    read NETDATA_DESTINATION_INPUT
-    NETDATA_DESTINATION=${NETDATA_DESTINATION_INPUT:-$NETDATA_DESTINATION}
-    echo -en "\033[0;33mNetdata api key (\033[0;37m$NETDATA_API_KEY\033[0;33m): \033[0m"
-    read NETDATA_API_KEY_INPUT
-    NETDATA_API_KEY=${NETDATA_API_KEY_INPUT:-$NETDATA_API_KEY}
-  else
-    echo -en "\033[0;33mNetdata destination: \033[0m"
-    read NETDATA_DESTINATION
-    echo -en "\033[0;33mNetdata api key: \033[0m"
-    read NETDATA_API_KEY
-  fi
-
-  ssh root@$NAME "curl https://get.netdata.cloud/kickstart.sh > /tmp/netdata-kickstart.sh && \
-    DEBIAN_FRONTEND=noninteractive sh /tmp/netdata-kickstart.sh --stable-channel && \
-    cd /etc/netdata 2>/dev/null || cd /opt/netdata/etc/netdata && \
-    echo -e '[stream]\n    enabled = yes\n    destination = $NETDATA_DESTINATION:19999\n    api key = $NETDATA_API_KEY' > stream.conf && \
-    cat stream.conf && \
-    systemctl restart netdata"
-
-  echo -e "NETDATA_DESTINATION=$NETDATA_DESTINATION\nNETDATA_API_KEY=$NETDATA_API_KEY\nBETTERSTACK_KEY=$BETTERSTACK_KEY" > "$(dirname "$0")/.env"
-}
-
-uninstall_netdata() {
-  echo -e "\033[0;34m>>> UNINSTALLING NETDATA <<<\n\033[0m"
-  ssh root@$NAME "systemctl stop netdata || true && \
-    systemctl disable netdata || true && \
-    apt-get remove -y --autoremove netdata* && \
-    rm -rf /etc/netdata /var/lib/netdata /var/cache/netdata /var/log/netdata /opt/netdata && \
-    userdel netdata 2>/dev/null || true && \
-    find / -name '*netdata*' -type d -exec rm -rf {} + 2>/dev/null || true && \
-    dpkg-statoverride --list | grep netdata | awk '{print \$4}' | xargs -I {} dpkg-statoverride --remove {}"
 }
 
 install_betterstack() {
