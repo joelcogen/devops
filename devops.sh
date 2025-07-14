@@ -73,9 +73,9 @@ choose_host() {
     for i in "${!HOSTS[@]}"; do
       IFS=':' read -r host ip <<< "${HOSTS[$i]}"
       if [ $i -eq $selected ]; then
-        printf "\033[0;34m> %-30s %s\033[0m\n" "$host" "$ip"
+        printf "\033[0;34m> %-50s %s\033[0m\n" "$host" "$ip"
       else
-        printf "  %-30s %s\n" "$host" "$ip"
+        printf "  %-50s %s\n" "$host" "$ip"
       fi
     done
     echo
@@ -123,6 +123,8 @@ display_menu() {
                 "Basic setup"
                 "Install Docker"
                 "Install BetterStack (Vector/Docker)"
+                "Install Tailscale"
+                "Restrict SSH"
                 "Open port..."
                 "Test ports"
                 "Add SSH key..."
@@ -144,7 +146,7 @@ display_menu() {
     done
     echo
 
-    PREV_LINES=$(( $PREV_LINES + 13 ))
+    PREV_LINES=$(( $PREV_LINES + 15 ))
 
     read -rsn1 key
 
@@ -174,11 +176,13 @@ display_menu() {
           2) host_title; basic_setup; finish;;
           3) host_title; install_docker; finish;;
           4) host_title; install_betterstack; finish;;
-          5) host_title; display_menu_ports;;
-          6) host_title; test_ports;;
-          7) host_title; display_menu_ssh_key;;
-          8) host_title; upgrade_apt; finish;;
-          9) break;;
+          5) host_title; install_tailscale; finish;;
+          6) host_title; restrict_ssh; finish;;
+          7) host_title; display_menu_ports;;
+          8) host_title; test_ports;;
+          9) host_title; display_menu_ssh_key;;
+          10) host_title; upgrade_apt; finish;;
+          11) break;;
         esac
         ;;
     esac
@@ -411,6 +415,23 @@ install_betterstack() {
     systemctl restart vector"
 
   echo -e "NETDATA_DESTINATION=$NETDATA_DESTINATION\nNETDATA_API_KEY=$NETDATA_API_KEY\nBETTERSTACK_KEY=$BETTERSTACK_KEY" > "$(dirname "$0")/.env"
+}
+
+install_tailscale() {
+  ssh root@$NAME "curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null && \
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list && \
+    apt-get update -qq && \
+    apt-get install -y tailscale && \
+    tailscale up"
+}
+
+restrict_ssh() {
+  echo -en "\033[0;33mLocal IP range (e.g. 10.0.0.0): \033[0m"
+  read local_ip
+  ssh root@$NAME "ufw allow from 100.100.0.0/16 to any port 22 proto tcp && \
+    ufw allow from ${local_ip}/16 to any port 22 proto tcp && \
+    ufw delete allow OpenSSH && \
+    ufw status verbose"
 }
 
 test_ports() {
