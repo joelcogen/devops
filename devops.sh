@@ -325,14 +325,24 @@ check_status() {
     echo -en "\033[1A\033[K"
     echo -e "\033[0;32m✔ Docker\033[0m"
 
-    echo -e "\033[0;33m⏱ ufw-docker\033[0m"
+    echo -e "  \033[0;33m⏱ Docker Compose\033[0m"
+    dcompose_output=$(ssh root@$NAME "docker compose version" 2>/dev/null) || dcompose_output=""
+    if echo "$dcompose_output" | grep -q "Docker Compose version"; then
+      echo -en "\033[1A\033[K"
+      echo -e "  \033[0;32m✔ Docker Compose\033[0m"
+    else
+      echo -en "\033[1A\033[K"
+      echo -e "  \033[0;31m✘ Docker Compose\033[0m"
+    fi
+
+    echo -e "  \033[0;33m⏱ ufw-docker\033[0m"
     ufwdocker_output=$(ssh root@$NAME "ufw-docker check" 2>/dev/null) || ufwdocker_output=""
     if [ -n "$ufwdocker_output" ]; then
       echo -en "\033[1A\033[K"
-      echo -e "\033[0;32m✔ ufw-docker\033[0m"
+      echo -e "  \033[0;32m✔ ufw-docker\033[0m"
     else
       echo -en "\033[1A\033[K"
-      echo -e "\033[0;31m✘ ufw-docker\033[0m"
+      echo -e "  \033[0;31m✘ ufw-docker\033[0m"
     fi
   else
     echo -en "\033[1A\033[K"
@@ -348,6 +358,17 @@ check_status() {
   else
     echo -en "\033[1A\033[K"
     echo -e "\033[0;31m✘ BetterStack\033[0m"
+  fi
+
+  # Tailscale
+  echo -e "\033[0;33m⏱ Tailscale\033[0m"
+  tailscale_output=$(ssh root@$NAME "tailscale status" 2>/dev/null) || tailscale_output="Tailscale is stopped."
+  if echo "$tailscale_output" | grep -q "Tailscale is stopped."; then
+    echo -en "\033[1A\033[K"
+    echo -e "\033[0;31m✘ Tailscale\033[0m"
+  else
+    echo -en "\033[1A\033[K"
+    echo -e "\033[0;32m✔ Tailscale\033[0m"
   fi
 }
 
@@ -387,16 +408,20 @@ install_docker() {
   # Install Docker
   echo -e "\033[0;34m\n>>> DOCKER <<<\n\033[0m"
   ssh root@$NAME "DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq docker.io > /dev/null && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq docker.io ca-certificates curl gnupg > /dev/null && \
     usermod -a -G docker $USERNAME"
   ssh $NAME "docker -v"
 
-  # Install UFW-Docker and allow in on br-+ (docker bridge interfaces created by Kamal)
-  ssh root@$NAME "wget -O /usr/local/bin/ufw-docker https://raw.githubusercontent.com/chaifeng/ufw-docker/17e6047590e14d3ff1dc6c01f0b4755d115fc078/ufw-docker && \
-    chmod +x /usr/local/bin/ufw-docker && \
-    ufw-docker install && \
-    ufw allow in on br-+ && \
-    systemctl restart ufw"
+  # Install Docker Compose
+  ssh root@$NAME "install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo \"deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+      https://download.docker.com/linux/ubuntu \
+      \$(. /etc/os-release && echo \$UBUNTU_CODENAME) stable\" | tee /etc/apt/sources.list.d/docker.list >/dev/null && \
+    DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq docker-compose-plugin"
+  ssh $NAME "docker compose version"
 }
 
 install_betterstack() {
@@ -418,10 +443,10 @@ install_betterstack() {
 }
 
 install_tailscale() {
-  ssh root@$NAME "curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null && \
-    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list && \
-    apt-get update -qq && \
-    apt-get install -y tailscale && \
+  ssh root@$NAME "curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/\$(. /etc/os-release && echo \$UBUNTU_CODENAME).noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null && \
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/\$(. /etc/os-release && echo \$UBUNTU_CODENAME).tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list && \
+    DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq tailscale && \
     tailscale up"
 }
 
