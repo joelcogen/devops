@@ -10,6 +10,10 @@ COPY haproxy.cfg.example /haproxy.cfg.example
 COPY errors /usr/local/etc/haproxy/errors
 RUN mkdir -p /certs
 RUN chown -R haproxy:haproxy /certs
+RUN mkdir -p /var/log/letsencrypt
+RUN chown -R haproxy:haproxy /var/log/letsencrypt
+RUN mkdir -p /var/lib/letsencrypt
+RUN chown -R haproxy:haproxy /var/lib/letsencrypt
 RUN chmod +x /entrypoint.sh
 # end root block
 
