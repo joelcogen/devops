@@ -1,9 +1,6 @@
 global
         log stdout format raw local0
         log stdout format raw local1 notice
-        chroot /var/lib/haproxy
-        stats socket /run/haproxy_admin.sock mode 660 level admin
-        stats timeout 30s
         user haproxy
         group haproxy
 
@@ -35,7 +32,7 @@ defaults
 frontend http-in
         bind *:80
         bind *:443 ssl crt /certs/haproxy.pem
-        
+
         # HTTP to HTTPS redirect
         redirect scheme https code 301 if !{ ssl_fc }
 
